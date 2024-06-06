@@ -4,6 +4,7 @@ from sqlalchemy import ColumnExpressionArgument, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.common.interfaces.repository import BaseRepository
+from src.database.orm.base import Base
 
 
 class BaseOrmRepository(BaseRepository[AsyncSession, ColumnExpressionArgument]):
