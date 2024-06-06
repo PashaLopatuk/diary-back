@@ -9,4 +9,4 @@ def init_routers(app: FastAPI) -> None:
     root_router.include_router(auth_router)
 
     app.include_router(root_router)
-    return app
+
