@@ -1,4 +1,3 @@
-from logging import Handler
 from typing import TypeVar, Type
 from abc import ABC, abstractmethod
 

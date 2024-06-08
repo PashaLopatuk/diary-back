@@ -1,8 +1,9 @@
-from src.repositories.user import UserRepository
-from src.services.user import UserService
+from src.repositories.auth import AuthRepository
+from src.services.auth import AuthService
 
 
 class GatewayService:
     @staticmethod
-    def user_service() -> UserService:
-        return UserService(repository=UserRepository())
+    def user_service() -> AuthService:
+        return AuthService(repository=AuthRepository())
+    

@@ -1,14 +1,16 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.common.dto.queries.auth import LoginCredentialsModel
 from src.common.dto.queries.user import CreateUserQuery
 from src.common.dto.responses.user import UserResponseModel
-from src.common.exceptions.database import AlreadyExistsException
-from src.common.utils.security.verify import get_password_hash
-from src.repositories.user import UserRepository
+from src.common.exceptions.authorization import AuthenticationException
+from src.common.exceptions.database import AlreadyExistsException, NoRecordsFoundException
+from src.common.utils.security.verify import get_password_hash, verify_password
+from src.repositories.auth import AuthRepository
 from src.services.base import BaseService
 
 
-class UserService(BaseService[UserRepository]):
+class AuthService(BaseService[AuthRepository]):
     async def get_user(
             self, selection_id: int | None, username: str | None, async_session: AsyncSession
     ) -> UserResponseModel:
@@ -34,3 +36,30 @@ class UserService(BaseService[UserRepository]):
         user = await self.repository.create_user(user_payload, async_session=async_session)
 
         return UserResponseModel.model_validate(user)
+
+    async def login_user(
+            self,
+            credentials: LoginCredentialsModel,
+            async_session: AsyncSession
+    ):
+        existing_user = await self.repository.select_user_by_username(
+            username=credentials.username,
+            async_session=async_session
+        )
+
+        if not existing_user:
+            raise NoRecordsFoundException(message=f"User with username '{credentials.username}' does not exists")
+
+        user = await self.repository.select_user_by_username(
+            username=credentials.username,
+            async_session=async_session
+        )
+
+        hashed_password = user.hashed_password
+
+        plain_password = credentials.password
+
+        if verify_password(plain_password, hashed_password):
+            return UserResponseModel.model_validate(user)
+        else:
+            raise AuthenticationException("Incorrect password")
